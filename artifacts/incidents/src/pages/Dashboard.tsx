@@ -2,7 +2,7 @@ import { useGetDashboardSummary } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Clock, Activity } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend } from "recharts";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
@@ -15,6 +15,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 
 export function Dashboard() {
   const { data, isLoading } = useGetDashboardSummary();
+  const [, setLocation] = useLocation();
 
   if (isLoading) {
     return <div className="p-8">Loading dashboard...</div>;
@@ -133,6 +134,7 @@ export function Dashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Incidents by Department (Last 30 Days)</CardTitle>
+          <p className="text-xs text-muted-foreground">Click a department in the legend to view its incidents.</p>
         </CardHeader>
         <CardContent className="pl-2">
           <div className="h-[320px]">
@@ -142,7 +144,16 @@ export function Dashboard() {
                 <XAxis dataKey="date" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} tickFormatter={(v) => v.slice(5)} />
                 <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
                 <RechartsTooltip />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Legend
+                  wrapperStyle={{ fontSize: 12, cursor: "pointer" }}
+                  onClick={(entry) => {
+                    const dept = (entry as { dataKey?: string; value?: string }).dataKey
+                      ?? (entry as { value?: string }).value;
+                    if (dept) {
+                      setLocation(`/incidents?department=${encodeURIComponent(String(dept))}`);
+                    }
+                  }}
+                />
                 {data.departments.map((dept, index) => (
                   <Area
                     key={dept}
@@ -152,6 +163,10 @@ export function Dashboard() {
                     stroke={COLORS[index % COLORS.length]}
                     fill={COLORS[index % COLORS.length]}
                     fillOpacity={0.6}
+                    style={{ cursor: "pointer" }}
+                    onClick={() =>
+                      setLocation(`/incidents?department=${encodeURIComponent(dept)}`)
+                    }
                   />
                 ))}
               </AreaChart>

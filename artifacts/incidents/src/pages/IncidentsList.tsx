@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "wouter";
+import { useEffect, useState } from "react";
+import { Link, useSearch } from "wouter";
 import { useListIncidents, useGetLookups } from "@workspace/api-client-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,12 +9,24 @@ import { Search, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function IncidentsList() {
-  const [search, setSearch] = useState("");
-  const [department, setDepartment] = useState<string>("all");
-  const [severity, setSeverity] = useState<string>("all");
-  const [status, setStatus] = useState<string>("all");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const searchString = useSearch();
+  const initial = new URLSearchParams(searchString);
+  const [search, setSearch] = useState(initial.get("search") ?? "");
+  const [department, setDepartment] = useState<string>(initial.get("department") ?? "all");
+  const [severity, setSeverity] = useState<string>(initial.get("severity") ?? "all");
+  const [status, setStatus] = useState<string>(initial.get("status") ?? "all");
+  const [startDate, setStartDate] = useState<string>(initial.get("startDate") ?? "");
+  const [endDate, setEndDate] = useState<string>(initial.get("endDate") ?? "");
+
+  useEffect(() => {
+    const next = new URLSearchParams(searchString);
+    setSearch(next.get("search") ?? "");
+    setDepartment(next.get("department") ?? "all");
+    setSeverity(next.get("severity") ?? "all");
+    setStatus(next.get("status") ?? "all");
+    setStartDate(next.get("startDate") ?? "");
+    setEndDate(next.get("endDate") ?? "");
+  }, [searchString]);
 
   const { data: lookups } = useGetLookups();
 
