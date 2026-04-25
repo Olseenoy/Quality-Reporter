@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
 export function IncidentsList() {
@@ -31,9 +31,27 @@ export function IncidentsList() {
           <h1 className="text-3xl font-bold tracking-tight">Incidents</h1>
           <p className="text-muted-foreground">Manage and track all quality incidents.</p>
         </div>
-        <Button asChild>
-          <Link href="/incidents/new" data-testid="link-new-incident">Report Incident</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              const qs = new URLSearchParams();
+              if (search) qs.set("search", search);
+              if (department !== "all") qs.set("department", department);
+              if (severity !== "all") qs.set("severity", severity);
+              if (status !== "all") qs.set("status", status);
+              const query = qs.toString();
+              window.location.href = `/api/incidents/export.csv${query ? `?${query}` : ""}`;
+            }}
+            data-testid="button-export-csv"
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Export CSV
+          </Button>
+          <Button asChild>
+            <Link href="/incidents/new" data-testid="link-new-incident">Report Incident</Link>
+          </Button>
+        </div>
       </div>
 
       <Card>

@@ -89,6 +89,103 @@ router.get("/incidents", async (req, res): Promise<void> => {
   res.json(rows.map((r) => toIncidentDto(r.incident, r.reporter)));
 });
 
+function escapeCsvField(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  const str = value instanceof Date ? value.toISOString() : String(value);
+  if (/[",\n\r]/.test(str)) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+router.get("/incidents/export.csv", async (req, res): Promise<void> => {
+  if (!req.session?.userId) {
+    res.status(401).json({ message: "Authentication required" });
+    return;
+  }
+
+  const parsedQuery = ListIncidentsQueryParams.safeParse(req.query);
+  if (!parsedQuery.success) {
+    res.status(400).json({ message: parsedQuery.error.message });
+    return;
+  }
+
+  const q = parsedQuery.data;
+  const conditions = [];
+  if (q.search) {
+    const term = `%${q.search}%`;
+    conditions.push(
+      or(
+        ilike(incidentsTable.incidentCode, term),
+        ilike(incidentsTable.description, term),
+        ilike(incidentsTable.line, term),
+        ilike(incidentsTable.productType, term),
+      ),
+    );
+  }
+  if (q.department) conditions.push(eq(incidentsTable.department, q.department));
+  if (q.category) conditions.push(eq(incidentsTable.category, q.category));
+  if (q.severity) conditions.push(eq(incidentsTable.severity, q.severity));
+  if (q.status) conditions.push(eq(incidentsTable.status, q.status));
+  if (q.startDate) conditions.push(gte(incidentsTable.occurredAt, q.startDate));
+  if (q.endDate) conditions.push(lte(incidentsTable.occurredAt, q.endDate));
+
+  const where = conditions.length > 0 ? and(...conditions) : undefined;
+
+  const rows = await db
+    .select({ incident: incidentsTable, reporter: usersTable })
+    .from(incidentsTable)
+    .leftJoin(usersTable, eq(incidentsTable.reportedById, usersTable.id))
+    .where(where)
+    .orderBy(desc(incidentsTable.occurredAt));
+
+  const headers = [
+    "Incident Code",
+    "Occurred At",
+    "Department",
+    "Line",
+    "Product Type",
+    "Category",
+    "Severity",
+    "Status",
+    "Root Cause",
+    "Description",
+    "Immediate Action",
+    "Reported By",
+    "Created At",
+  ];
+
+  const lines = [headers.join(",")];
+  for (const r of rows) {
+    lines.push(
+      [
+        r.incident.incidentCode,
+        r.incident.occurredAt,
+        r.incident.department,
+        r.incident.line,
+        r.incident.productType,
+        r.incident.category,
+        r.incident.severity,
+        r.incident.status,
+        r.incident.rootCauseCategory ?? "",
+        r.incident.description,
+        r.incident.immediateAction,
+        r.reporter?.fullName ?? "Unknown",
+        r.incident.createdAt,
+      ]
+        .map(escapeCsvField)
+        .join(","),
+    );
+  }
+
+  const csv = lines.join("\r\n") + "\r\n";
+  const filename = `incidents-${new Date().toISOString().slice(0, 10)}.csv`;
+
+  res.setHeader("Content-Type", "text/csv; charset=utf-8");
+  res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+  res.send(csv);
+});
+
 router.post("/incidents", async (req, res): Promise<void> => {
   if (!req.session?.userId) {
     res.status(401).json({ message: "Authentication required" });
