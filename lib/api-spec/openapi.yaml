@@ -3,20 +3,27 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Quality Incident Reporting System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication and user management
+  - name: incidents
+    description: Quality incident operations
+  - name: dashboard
+    description: Dashboard summary and analytics
+  - name: lookups
+    description: Static dropdown values
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +31,223 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+  /auth/me:
+    get:
+      operationId: getCurrentUser
+      tags: [auth]
+      summary: Get current logged in user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /lookups:
+    get:
+      operationId: getLookups
+      tags: [lookups]
+      summary: Get all dropdown lookup values
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lookups"
+  /incidents:
+    get:
+      operationId: listIncidents
+      tags: [incidents]
+      summary: List incidents with optional filters
+      parameters:
+        - in: query
+          name: search
+          schema:
+            type: string
+        - in: query
+          name: department
+          schema:
+            $ref: "#/components/schemas/Department"
+        - in: query
+          name: category
+          schema:
+            $ref: "#/components/schemas/IncidentCategory"
+        - in: query
+          name: severity
+          schema:
+            $ref: "#/components/schemas/Severity"
+        - in: query
+          name: status
+          schema:
+            $ref: "#/components/schemas/IncidentStatus"
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Incident"
+    post:
+      operationId: createIncident
+      tags: [incidents]
+      summary: Create new incident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateIncidentBody"
+      responses:
+        "200":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /incidents/{id}:
+    get:
+      operationId: getIncident
+      tags: [incidents]
+      summary: Get incident by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateIncident
+      tags: [incidents]
+      summary: Update incident (status, action, etc)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateIncidentBody"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Incident"
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Get dashboard summary metrics and breakdowns
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
 components:
   schemas:
     HealthStatus:
@@ -31,6 +255,302 @@ components:
       properties:
         status:
           type: string
+      required: [status]
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required: [message]
+    UserRole:
+      type: string
+      enum: [admin, supervisor, operator]
+    Department:
+      type: string
+      enum: [Production, Quality, Engineering, Warehouse, HSE]
+    IncidentCategory:
+      type: string
+      enum:
+        - Contamination
+        - Underweight
+        - Equipment Failure
+        - Process Deviation
+        - Packaging Defect
+        - Others
+    Severity:
+      type: string
+      enum: [Low, Medium, High, Critical]
+    IncidentStatus:
+      type: string
+      enum: [Open, In Progress, Closed]
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+        createdAt:
+          type: string
+          format: date-time
+      required: [id, email, fullName, role, createdAt]
+    RegisterBody:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 8
+        fullName:
+          type: string
+          minLength: 1
+        role:
+          $ref: "#/components/schemas/UserRole"
+      required: [email, password, fullName]
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+        password:
+          type: string
+      required: [email, password]
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+      required: [user]
+    Lookups:
+      type: object
+      properties:
+        departments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Department"
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncidentCategory"
+        severities:
+          type: array
+          items:
+            $ref: "#/components/schemas/Severity"
+        statuses:
+          type: array
+          items:
+            $ref: "#/components/schemas/IncidentStatus"
+        lines:
+          type: array
+          items:
+            type: string
+        productTypes:
+          type: array
+          items:
+            type: string
+        roles:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserRole"
+      required: [departments, categories, severities, statuses, lines, productTypes, roles]
+    Incident:
+      type: object
+      properties:
+        id:
+          type: integer
+        incidentCode:
+          type: string
+        occurredAt:
+          type: string
+          format: date-time
+        department:
+          $ref: "#/components/schemas/Department"
+        line:
+          type: string
+        productType:
+          type: string
+        category:
+          $ref: "#/components/schemas/IncidentCategory"
+        severity:
+          $ref: "#/components/schemas/Severity"
+        description:
+          type: string
+        immediateAction:
+          type: string
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        attachmentUrl:
+          type: string
+          nullable: true
+        rootCauseCategory:
+          type: string
+          nullable: true
+        reportedById:
+          type: integer
+        reportedByName:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
       required:
+        - id
+        - incidentCode
+        - occurredAt
+        - department
+        - line
+        - productType
+        - category
+        - severity
+        - description
+        - immediateAction
         - status
-
+        - reportedById
+        - reportedByName
+        - createdAt
+        - updatedAt
+    CreateIncidentBody:
+      type: object
+      properties:
+        department:
+          $ref: "#/components/schemas/Department"
+        line:
+          type: string
+          minLength: 1
+        productType:
+          type: string
+          minLength: 1
+        category:
+          $ref: "#/components/schemas/IncidentCategory"
+        severity:
+          $ref: "#/components/schemas/Severity"
+        description:
+          type: string
+          minLength: 1
+        immediateAction:
+          type: string
+          minLength: 1
+        attachmentUrl:
+          type: string
+          nullable: true
+        rootCauseCategory:
+          type: string
+          nullable: true
+      required:
+        - department
+        - line
+        - productType
+        - category
+        - severity
+        - description
+        - immediateAction
+    UpdateIncidentBody:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        immediateAction:
+          type: string
+        rootCauseCategory:
+          type: string
+          nullable: true
+    CategoryCount:
+      type: object
+      properties:
+        category:
+          $ref: "#/components/schemas/IncidentCategory"
+        count:
+          type: integer
+      required: [category, count]
+    DepartmentCount:
+      type: object
+      properties:
+        department:
+          $ref: "#/components/schemas/Department"
+        count:
+          type: integer
+      required: [department, count]
+    SeverityCount:
+      type: object
+      properties:
+        severity:
+          $ref: "#/components/schemas/Severity"
+        count:
+          type: integer
+      required: [severity, count]
+    StatusCount:
+      type: object
+      properties:
+        status:
+          $ref: "#/components/schemas/IncidentStatus"
+        count:
+          type: integer
+      required: [status, count]
+    TrendPoint:
+      type: object
+      properties:
+        date:
+          type: string
+        count:
+          type: integer
+      required: [date, count]
+    DashboardSummary:
+      type: object
+      properties:
+        totalIncidents:
+          type: integer
+        openIncidents:
+          type: integer
+        criticalIncidents:
+          type: integer
+        last30DaysIncidents:
+          type: integer
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCount"
+        byDepartment:
+          type: array
+          items:
+            $ref: "#/components/schemas/DepartmentCount"
+        bySeverity:
+          type: array
+          items:
+            $ref: "#/components/schemas/SeverityCount"
+        byStatus:
+          type: array
+          items:
+            $ref: "#/components/schemas/StatusCount"
+        trend:
+          type: array
+          items:
+            $ref: "#/components/schemas/TrendPoint"
+        recent:
+          type: array
+          items:
+            $ref: "#/components/schemas/Incident"
+      required:
+        - totalIncidents
+        - openIncidents
+        - criticalIncidents
+        - last30DaysIncidents
+        - byCategory
+        - byDepartment
+        - bySeverity
+        - byStatus
+        - trend
+        - recent

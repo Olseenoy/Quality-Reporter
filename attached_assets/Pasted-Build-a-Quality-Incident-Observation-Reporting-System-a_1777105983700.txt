@@ -1,0 +1,113 @@
+Build a Quality Incident Observation Reporting System as a full-stack web application.
+
+Objective
+
+The system should allow users to log, track, and analyze quality incidents in a production or manufacturing environment, with a focus on structured data capture, traceability, and basic analytics.
+
+---
+
+Core Features
+
+1. User Authentication
+
+- Secure login and registration
+- Role-based access (e.g., Admin, Supervisor, Operator)
+
+2. Incident Reporting Form
+   Create a form for logging incidents with the following fields:
+
+- Incident ID (auto-generated)
+- Date & Time (auto)
+- Department (dropdown: Production, Quality, Engineering, Warehouse, HSE)
+- Line/Area (dropdown)
+- Product Type (dropdown)
+- Incident Category (dropdown: Contamination, Underweight, Equipment Failure, Process Deviation, Packaging Defect, Others)
+- Severity Level (dropdown: Low, Medium, High, Critical)
+- Description (text area)
+- Immediate Action Taken (text area)
+- Reported By (auto-filled user)
+- Attachments (optional upload)
+
+3. Dropdown Functionality
+
+- Use dynamic and static dropdowns where appropriate
+- Allow admin to configure dropdown values (optional advanced feature)
+
+---
+
+Dashboard & Analytics
+
+- Display total incidents
+- Incidents by category (bar chart)
+- Incidents by department
+- Severity distribution
+- Recent incidents table
+
+---
+
+Incident Management
+
+- View all incidents in a table
+- Filter by date, department, severity, category
+- Search functionality
+- View detailed incident record
+- Update incident status (Open, In Progress, Closed)
+
+---
+
+Backend Requirements
+
+- Build a secure REST API
+- Use proper input validation
+- Store data in a relational database (e.g., PostgreSQL)
+- Hash passwords securely (bcrypt)
+- Implement authentication (JWT or session-based)
+
+---
+
+Frontend Requirements
+
+- Clean, responsive UI
+- Forms with validation
+- Use dropdowns for structured inputs
+- Display data using tables and charts
+
+---
+
+Security Best Practices
+
+- Use HTTPS
+- Do not expose secrets in frontend
+- Validate all inputs on backend
+- Implement authentication middleware
+- Role-based access control
+
+---
+
+Deployment
+
+- Prepare app for deployment
+- Frontend: Vercel or Netlify
+- Backend: Render or Railway
+- Database: PostgreSQL (Supabase or Neon)
+
+---
+
+Bonus Features (Optional)
+
+- Export reports (CSV/Excel)
+- Email notification for critical incidents
+- Root Cause Analysis section (Fishbone categories dropdown)
+- KPI tracking (incident trends over time)
+
+---
+
+Tech Stack Suggestion
+
+- Frontend: React
+- Backend: FastAPI (Python) or Node.js (Express)
+- Database: PostgreSQL
+
+---
+
+Build this as a production-ready, secure, and scalable application with clean code structure.
