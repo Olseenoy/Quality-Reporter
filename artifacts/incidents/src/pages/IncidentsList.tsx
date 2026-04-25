@@ -13,14 +13,18 @@ export function IncidentsList() {
   const [department, setDepartment] = useState<string>("all");
   const [severity, setSeverity] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
 
   const { data: lookups } = useGetLookups();
-  
+
   const params: any = {};
   if (search) params.search = search;
   if (department && department !== "all") params.department = department;
   if (severity && severity !== "all") params.severity = severity;
   if (status && status !== "all") params.status = status;
+  if (startDate) params.startDate = new Date(`${startDate}T00:00:00.000Z`);
+  if (endDate) params.endDate = new Date(`${endDate}T23:59:59.999Z`);
 
   const { data: incidents, isLoading } = useListIncidents(params);
 
@@ -40,6 +44,8 @@ export function IncidentsList() {
               if (department !== "all") qs.set("department", department);
               if (severity !== "all") qs.set("severity", severity);
               if (status !== "all") qs.set("status", status);
+              if (startDate) qs.set("startDate", new Date(`${startDate}T00:00:00.000Z`).toISOString());
+              if (endDate) qs.set("endDate", new Date(`${endDate}T23:59:59.999Z`).toISOString());
               const query = qs.toString();
               window.location.href = `/api/incidents/export.csv${query ? `?${query}` : ""}`;
             }}
@@ -55,7 +61,7 @@ export function IncidentsList() {
       </div>
 
       <Card>
-        <CardContent className="p-4 flex flex-col sm:flex-row gap-4 bg-muted/20">
+        <CardContent className="p-4 flex flex-col sm:flex-row sm:flex-wrap gap-4 bg-muted/20">
           <div className="relative flex-1">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -96,6 +102,44 @@ export function IncidentsList() {
               {lookups?.statuses.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
             </SelectContent>
           </Select>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground whitespace-nowrap">From</label>
+            <Input
+              type="date"
+              value={startDate}
+              max={endDate || undefined}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-[150px]"
+              data-testid="input-filter-start-date"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-muted-foreground whitespace-nowrap">To</label>
+            <Input
+              type="date"
+              value={endDate}
+              min={startDate || undefined}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-[150px]"
+              data-testid="input-filter-end-date"
+            />
+          </div>
+
+          {(startDate || endDate) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setStartDate("");
+                setEndDate("");
+              }}
+              data-testid="button-clear-dates"
+            >
+              Clear dates
+            </Button>
+          )}
         </CardContent>
       </Card>
 

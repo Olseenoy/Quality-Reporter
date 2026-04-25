@@ -36,6 +36,19 @@ function toIncidentDto(row: IncidentRow, reporter: UserRow | null) {
   };
 }
 
+function coerceListQueryDates(query: unknown): unknown {
+  if (!query || typeof query !== "object") return query;
+  const out: Record<string, unknown> = { ...(query as Record<string, unknown>) };
+  for (const key of ["startDate", "endDate"]) {
+    const v = out[key];
+    if (typeof v === "string" && v.length > 0) {
+      const d = new Date(v);
+      if (!Number.isNaN(d.getTime())) out[key] = d;
+    }
+  }
+  return out;
+}
+
 async function generateIncidentCode(): Promise<string> {
   const year = new Date().getFullYear();
   const [{ count }] = await db
@@ -51,7 +64,7 @@ router.get("/incidents", async (req, res): Promise<void> => {
     return;
   }
 
-  const parsedQuery = ListIncidentsQueryParams.safeParse(req.query);
+  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQueryDates(req.query));
   if (!parsedQuery.success) {
     res.status(400).json({ message: parsedQuery.error.message });
     return;
@@ -104,7 +117,7 @@ router.get("/incidents/export.csv", async (req, res): Promise<void> => {
     return;
   }
 
-  const parsedQuery = ListIncidentsQueryParams.safeParse(req.query);
+  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQueryDates(req.query));
   if (!parsedQuery.success) {
     res.status(400).json({ message: parsedQuery.error.message });
     return;
