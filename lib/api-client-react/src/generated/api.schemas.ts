@@ -169,6 +169,11 @@ export interface TrendPoint {
   count: number;
 }
 
+export type DashboardSummaryTrendByDepartmentItem = {
+  date: string;
+  [key: string]: unknown;
+};
+
 export interface DashboardSummary {
   totalIncidents: number;
   openIncidents: number;
@@ -179,6 +184,8 @@ export interface DashboardSummary {
   bySeverity: SeverityCount[];
   byStatus: StatusCount[];
   trend: TrendPoint[];
+  trendByDepartment: DashboardSummaryTrendByDepartmentItem[];
+  departments: string[];
   recent: Incident[];
 }
 

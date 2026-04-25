@@ -539,6 +539,19 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/TrendPoint"
+        trendByDepartment:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+            properties:
+              date:
+                type: string
+            required: [date]
+        departments:
+          type: array
+          items:
+            type: string
         recent:
           type: array
           items:
@@ -553,4 +566,6 @@ components:
         - bySeverity
         - byStatus
         - trend
+        - trendByDepartment
+        - departments
         - recent

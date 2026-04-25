@@ -77,6 +77,37 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
     .groupBy(sql`date_trunc('day', ${incidentsTable.occurredAt})`)
     .orderBy(sql`date_trunc('day', ${incidentsTable.occurredAt})`);
 
+  const deptTrendRows = await db
+    .select({
+      date: sql<string>`to_char(date_trunc('day', ${incidentsTable.occurredAt}), 'YYYY-MM-DD')`,
+      department: incidentsTable.department,
+      count: sql<number>`count(*)::int`,
+    })
+    .from(incidentsTable)
+    .where(gte(incidentsTable.occurredAt, thirtyDaysAgo))
+    .groupBy(
+      sql`date_trunc('day', ${incidentsTable.occurredAt})`,
+      incidentsTable.department,
+    )
+    .orderBy(sql`date_trunc('day', ${incidentsTable.occurredAt})`);
+
+  const departments = Array.from(
+    new Set(deptTrendRows.map((r) => r.department)),
+  ).sort();
+  const trendByDateMap = new Map<string, Record<string, number | string>>();
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+    const key = d.toISOString().slice(0, 10);
+    const row: Record<string, number | string> = { date: key };
+    for (const dept of departments) row[dept] = 0;
+    trendByDateMap.set(key, row);
+  }
+  for (const r of deptTrendRows) {
+    const row = trendByDateMap.get(r.date);
+    if (row) row[r.department] = Number(r.count);
+  }
+  const trendByDepartment = Array.from(trendByDateMap.values());
+
   const recentRows = await db
     .select({ incident: incidentsTable, reporter: usersTable })
     .from(incidentsTable)
@@ -126,6 +157,8 @@ router.get("/dashboard/summary", async (req, res): Promise<void> => {
       count: Number(r.count),
     })),
     trend: trendRows.map((r) => ({ date: r.date, count: Number(r.count) })),
+    trendByDepartment,
+    departments,
     recent,
   });
 });

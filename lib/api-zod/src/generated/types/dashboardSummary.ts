@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { CategoryCount } from "./categoryCount";
+import type { DashboardSummaryTrendByDepartmentItem } from "./dashboardSummaryTrendByDepartmentItem";
 import type { DepartmentCount } from "./departmentCount";
 import type { Incident } from "./incident";
 import type { SeverityCount } from "./severityCount";
@@ -22,5 +23,7 @@ export interface DashboardSummary {
   bySeverity: SeverityCount[];
   byStatus: StatusCount[];
   trend: TrendPoint[];
+  trendByDepartment: DashboardSummaryTrendByDepartmentItem[];
+  departments: string[];
   recent: Incident[];
 }

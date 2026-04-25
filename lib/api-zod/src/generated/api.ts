@@ -355,6 +355,12 @@ export const GetDashboardSummaryResponse = zod.object({
       count: zod.number(),
     }),
   ),
+  trendByDepartment: zod.array(
+    zod.object({
+      date: zod.string(),
+    }),
+  ),
+  departments: zod.array(zod.string()),
   recent: zod.array(
     zod.object({
       id: zod.number(),

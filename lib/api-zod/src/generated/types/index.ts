@@ -10,6 +10,7 @@ export * from "./authResponse";
 export * from "./categoryCount";
 export * from "./createIncidentBody";
 export * from "./dashboardSummary";
+export * from "./dashboardSummaryTrendByDepartmentItem";
 export * from "./department";
 export * from "./departmentCount";
 export * from "./errorResponse";

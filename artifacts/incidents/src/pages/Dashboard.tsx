@@ -1,7 +1,7 @@
 import { useGetDashboardSummary } from "@workspace/api-client-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AlertCircle, CheckCircle2, Clock, Activity } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, AreaChart, Area, Legend } from "recharts";
 import { Link } from "wouter";
 import { Badge } from "@/components/ui/badge";
 
@@ -129,6 +129,36 @@ export function Dashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Incidents by Department (Last 30 Days)</CardTitle>
+        </CardHeader>
+        <CardContent className="pl-2">
+          <div className="h-[320px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.trendByDepartment} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="date" stroke="#888888" fontSize={11} tickLine={false} axisLine={false} interval="preserveStartEnd" minTickGap={32} tickFormatter={(v) => v.slice(5)} />
+                <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <RechartsTooltip />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                {data.departments.map((dept, index) => (
+                  <Area
+                    key={dept}
+                    type="monotone"
+                    dataKey={dept}
+                    stackId="1"
+                    stroke={COLORS[index % COLORS.length]}
+                    fill={COLORS[index % COLORS.length]}
+                    fillOpacity={0.6}
+                  />
+                ))}
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
