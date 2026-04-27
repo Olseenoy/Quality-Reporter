@@ -121,6 +121,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Lookups"
+  /users:
+    get:
+      operationId: listUsers
+      tags: [auth]
+      summary: List users available for assignment (admin/supervisor only)
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UserSummary"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
   /incidents:
     get:
       operationId: listIncidents
@@ -159,6 +179,10 @@ paths:
             format: date-time
         - in: query
           name: reportedById
+          schema:
+            type: integer
+        - in: query
+          name: assignedToId
           schema:
             type: integer
       responses:
@@ -405,6 +429,12 @@ components:
           type: integer
         reportedByName:
           type: string
+        assignedToId:
+          type: integer
+          nullable: true
+        assignedToName:
+          type: string
+          nullable: true
         createdAt:
           type: string
           format: date-time
@@ -472,6 +502,19 @@ components:
         rootCauseCategory:
           type: string
           nullable: true
+        assignedToId:
+          type: integer
+          nullable: true
+    UserSummary:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        role:
+          $ref: "#/components/schemas/UserRole"
+      required: [id, fullName, role]
     CategoryCount:
       type: object
       properties:

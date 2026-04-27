@@ -119,4 +119,32 @@ router.get("/auth/me", async (req, res): Promise<void> => {
   res.json(GetCurrentUserResponse.parse(toUserResponse(user)));
 });
 
+router.get("/users", async (req, res): Promise<void> => {
+  if (!req.session?.userId) {
+    res.status(401).json({ message: "Not authenticated" });
+    return;
+  }
+
+  const [me] = await db
+    .select({ role: usersTable.role })
+    .from(usersTable)
+    .where(eq(usersTable.id, req.session.userId));
+
+  if (!me || (me.role !== "admin" && me.role !== "supervisor")) {
+    res.status(403).json({ message: "Forbidden" });
+    return;
+  }
+
+  const rows = await db
+    .select({
+      id: usersTable.id,
+      fullName: usersTable.fullName,
+      role: usersTable.role,
+    })
+    .from(usersTable)
+    .orderBy(usersTable.fullName);
+
+  res.json(rows);
+});
+
 export default router;

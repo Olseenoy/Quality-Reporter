@@ -12,7 +12,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, Download } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-export function IncidentsList({ mineOnly = false }: { mineOnly?: boolean }) {
+export function IncidentsList({
+  mineOnly = false,
+  assignedToMe = false,
+}: {
+  mineOnly?: boolean;
+  assignedToMe?: boolean;
+}) {
   const searchString = useSearch();
   const initial = new URLSearchParams(searchString);
   const [search, setSearch] = useState(initial.get("search") ?? "");
@@ -43,18 +49,28 @@ export function IncidentsList({ mineOnly = false }: { mineOnly?: boolean }) {
   if (startDate) params.startDate = new Date(`${startDate}T00:00:00.000Z`);
   if (endDate) params.endDate = new Date(`${endDate}T23:59:59.999Z`);
   if (mineOnly && currentUser?.id) params.reportedById = currentUser.id;
+  if (assignedToMe && currentUser?.id) params.assignedToId = currentUser.id;
 
+  const needsUser = mineOnly || assignedToMe;
   const { data: incidents, isLoading } = useListIncidents(params, {
-    query: { enabled: !mineOnly || !!currentUser?.id },
+    query: { enabled: !needsUser || !!currentUser?.id },
   });
 
-  const title = mineOnly ? "My Incidents" : "Incidents";
-  const subtitle = mineOnly
-    ? "Quality incidents you have reported."
-    : "Manage and track all quality incidents.";
-  const emptyMsg = mineOnly
-    ? "You haven't reported any incidents yet."
-    : "No incidents found matching criteria.";
+  const title = assignedToMe
+    ? "Assigned to Me"
+    : mineOnly
+      ? "My Incidents"
+      : "Incidents";
+  const subtitle = assignedToMe
+    ? "Quality incidents currently assigned to you for action."
+    : mineOnly
+      ? "Quality incidents you have reported."
+      : "Manage and track all quality incidents.";
+  const emptyMsg = assignedToMe
+    ? "Nothing assigned to you right now."
+    : mineOnly
+      ? "You haven't reported any incidents yet."
+      : "No incidents found matching criteria.";
 
   return (
     <div className="space-y-6">
@@ -75,6 +91,7 @@ export function IncidentsList({ mineOnly = false }: { mineOnly?: boolean }) {
               if (startDate) qs.set("startDate", new Date(`${startDate}T00:00:00.000Z`).toISOString());
               if (endDate) qs.set("endDate", new Date(`${endDate}T23:59:59.999Z`).toISOString());
               if (mineOnly && currentUser?.id) qs.set("reportedById", String(currentUser.id));
+              if (assignedToMe && currentUser?.id) qs.set("assignedToId", String(currentUser.id));
               const query = qs.toString();
               window.location.href = `/api/incidents/export.csv${query ? `?${query}` : ""}`;
             }}
@@ -187,13 +204,14 @@ export function IncidentsList({ mineOnly = false }: { mineOnly?: boolean }) {
                 <th className="px-4 py-3">Severity</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Reporter</th>
+                <th className="px-4 py-3">Assignee</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {isLoading ? (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">Loading incidents...</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">Loading incidents...</td></tr>
               ) : !incidents || incidents.length === 0 ? (
-                <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">{emptyMsg}</td></tr>
+                <tr><td colSpan={9} className="p-8 text-center text-muted-foreground">{emptyMsg}</td></tr>
               ) : (
                 incidents.map((incident) => (
                   <tr key={incident.id} className="hover:bg-muted/30 transition-colors group">
@@ -217,6 +235,9 @@ export function IncidentsList({ mineOnly = false }: { mineOnly?: boolean }) {
                       </Badge>
                     </td>
                     <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">{incident.reportedByName}</td>
+                    <td className="px-4 py-3 whitespace-nowrap text-muted-foreground">
+                      {incident.assignedToName ?? <span className="italic">Unassigned</span>}
+                    </td>
                   </tr>
                 ))
               )}

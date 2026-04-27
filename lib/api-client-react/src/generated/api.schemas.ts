@@ -118,6 +118,8 @@ export interface Incident {
   rootCauseCategory?: string | null;
   reportedById: number;
   reportedByName: string;
+  assignedToId?: number | null;
+  assignedToName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -142,6 +144,13 @@ export interface UpdateIncidentBody {
   status?: IncidentStatus;
   immediateAction?: string;
   rootCauseCategory?: string | null;
+  assignedToId?: number | null;
+}
+
+export interface UserSummary {
+  id: number;
+  fullName: string;
+  role: UserRole;
 }
 
 export interface CategoryCount {
@@ -198,4 +207,5 @@ export type ListIncidentsParams = {
   startDate?: string;
   endDate?: string;
   reportedById?: number;
+  assignedToId?: number;
 };

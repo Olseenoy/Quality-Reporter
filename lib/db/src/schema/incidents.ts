@@ -27,6 +27,9 @@ export const incidentsTable = pgTable("incidents", {
   reportedById: integer("reported_by_id")
     .notNull()
     .references(() => usersTable.id, { onDelete: "restrict" }),
+  assignedToId: integer("assigned_to_id").references(() => usersTable.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

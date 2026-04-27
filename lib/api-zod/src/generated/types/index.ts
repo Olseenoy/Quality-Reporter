@@ -30,3 +30,4 @@ export * from "./trendPoint";
 export * from "./updateIncidentBody";
 export * from "./user";
 export * from "./userRole";
+export * from "./userSummary";

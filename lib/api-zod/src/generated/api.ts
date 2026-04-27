@@ -99,6 +99,16 @@ export const GetLookupsResponse = zod.object({
 });
 
 /**
+ * @summary List users available for assignment (admin/supervisor only)
+ */
+export const ListUsersResponseItem = zod.object({
+  id: zod.number(),
+  fullName: zod.string(),
+  role: zod.enum(["admin", "supervisor", "operator"]),
+});
+export const ListUsersResponse = zod.array(ListUsersResponseItem);
+
+/**
  * @summary List incidents with optional filters
  */
 export const ListIncidentsQueryParams = zod.object({
@@ -121,6 +131,7 @@ export const ListIncidentsQueryParams = zod.object({
   startDate: zod.date().optional(),
   endDate: zod.date().optional(),
   reportedById: zod.coerce.number().optional(),
+  assignedToId: zod.coerce.number().optional(),
 });
 
 export const ListIncidentsResponseItem = zod.object({
@@ -152,6 +163,8 @@ export const ListIncidentsResponseItem = zod.object({
   rootCauseCategory: zod.string().nullish(),
   reportedById: zod.number(),
   reportedByName: zod.string(),
+  assignedToId: zod.number().nullish(),
+  assignedToName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -215,6 +228,8 @@ export const CreateIncidentResponse = zod.object({
   rootCauseCategory: zod.string().nullish(),
   reportedById: zod.number(),
   reportedByName: zod.string(),
+  assignedToId: zod.number().nullish(),
+  assignedToName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -255,6 +270,8 @@ export const GetIncidentResponse = zod.object({
   rootCauseCategory: zod.string().nullish(),
   reportedById: zod.number(),
   reportedByName: zod.string(),
+  assignedToId: zod.number().nullish(),
+  assignedToName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -270,6 +287,7 @@ export const UpdateIncidentBody = zod.object({
   status: zod.enum(["Open", "In Progress", "Closed"]).optional(),
   immediateAction: zod.string().optional(),
   rootCauseCategory: zod.string().nullish(),
+  assignedToId: zod.number().nullish(),
 });
 
 export const UpdateIncidentResponse = zod.object({
@@ -301,6 +319,8 @@ export const UpdateIncidentResponse = zod.object({
   rootCauseCategory: zod.string().nullish(),
   reportedById: zod.number(),
   reportedByName: zod.string(),
+  assignedToId: zod.number().nullish(),
+  assignedToName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -392,6 +412,8 @@ export const GetDashboardSummaryResponse = zod.object({
       rootCauseCategory: zod.string().nullish(),
       reportedById: zod.number(),
       reportedByName: zod.string(),
+      assignedToId: zod.number().nullish(),
+      assignedToName: zod.string().nullish(),
       createdAt: zod.coerce.date(),
       updatedAt: zod.coerce.date(),
     }),

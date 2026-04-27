@@ -13,6 +13,7 @@ import {
   LogOut,
   Menu,
   User as UserIcon,
+  Inbox,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,10 +26,16 @@ import {
 } from "@/components/ui/sheet";
 
 const NAV_ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/incidents", label: "Incidents", icon: List },
-  { href: "/my-incidents", label: "My Incidents", icon: UserIcon },
-  { href: "/incidents/new", label: "New Incident", icon: PlusCircle },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, roles: null },
+  { href: "/incidents", label: "Incidents", icon: List, roles: null },
+  { href: "/my-incidents", label: "My Incidents", icon: UserIcon, roles: null },
+  {
+    href: "/assigned-to-me",
+    label: "Assigned to Me",
+    icon: Inbox,
+    roles: null,
+  },
+  { href: "/incidents/new", label: "New Incident", icon: PlusCircle, roles: null },
 ] as const;
 
 function isActiveRoute(currentPath: string, href: string): boolean {

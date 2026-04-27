@@ -26,6 +26,8 @@ export interface Incident {
   rootCauseCategory?: string | null;
   reportedById: number;
   reportedByName: string;
+  assignedToId?: number | null;
+  assignedToName?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

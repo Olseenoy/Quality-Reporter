@@ -11,4 +11,5 @@ export interface UpdateIncidentBody {
   status?: IncidentStatus;
   immediateAction?: string;
   rootCauseCategory?: string | null;
+  assignedToId?: number | null;
 }

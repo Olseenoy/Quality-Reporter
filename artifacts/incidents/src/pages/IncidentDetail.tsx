@@ -1,4 +1,4 @@
-import { useGetIncident, useUpdateIncident, useGetLookups, useGetCurrentUser, getGetIncidentQueryKey } from "@workspace/api-client-react";
+import { useGetIncident, useUpdateIncident, useGetLookups, useGetCurrentUser, useListUsers, getGetIncidentQueryKey } from "@workspace/api-client-react";
 import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,8 @@ export function IncidentDetail() {
   const { data: incident, isLoading } = useGetIncident(numericId, { query: { enabled: !!numericId, queryKey: getGetIncidentQueryKey(numericId) } });
   const { data: lookups } = useGetLookups();
   const { data: user } = useGetCurrentUser();
+  const canEdit = user?.role === 'admin' || user?.role === 'supervisor';
+  const { data: users } = useListUsers({ query: { enabled: canEdit } });
   const updateMutation = useUpdateIncident();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -26,6 +28,7 @@ export function IncidentDetail() {
   const [status, setStatus] = useState<string>("");
   const [immediateAction, setImmediateAction] = useState<string>("");
   const [rootCauseCategory, setRootCauseCategory] = useState<string>("");
+  const [assignedTo, setAssignedTo] = useState<string>("unassigned");
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
@@ -33,23 +36,23 @@ export function IncidentDetail() {
       setStatus(incident.status);
       setImmediateAction(incident.immediateAction || "");
       setRootCauseCategory(incident.rootCauseCategory || "");
+      setAssignedTo(incident.assignedToId ? String(incident.assignedToId) : "unassigned");
     }
   }, [incident]);
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading incident details...</div>;
   if (!incident) return <div className="p-8 text-center text-destructive">Incident not found.</div>;
 
-  const canEdit = user?.role === 'admin' || user?.role === 'supervisor';
-
   const handleSave = () => {
     updateMutation.mutate(
-      { 
-        id: numericId, 
-        data: { 
-          status: status as any, 
-          immediateAction, 
-          rootCauseCategory: rootCauseCategory || null 
-        } 
+      {
+        id: numericId,
+        data: {
+          status: status as any,
+          immediateAction,
+          rootCauseCategory: rootCauseCategory || null,
+          assignedToId: assignedTo === "unassigned" ? null : Number(assignedTo),
+        },
       },
       {
         onSuccess: (data) => {
@@ -217,7 +220,36 @@ export function IncidentDetail() {
                   {incident.reportedByName}
                 </div>
               </div>
-              
+
+              <div>
+                <span className="text-muted-foreground block text-xs mb-1">Assigned To</span>
+                {isEditing && canEdit ? (
+                  <Select value={assignedTo} onValueChange={setAssignedTo}>
+                    <SelectTrigger data-testid="select-assignee">
+                      <SelectValue placeholder="Assign to..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {users?.map((u) => (
+                        <SelectItem key={u.id} value={String(u.id)}>
+                          {u.fullName}{" "}
+                          <span className="text-muted-foreground text-xs">
+                            ({u.role})
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : incident.assignedToName ? (
+                  <div className="flex items-center gap-2 font-medium" data-testid="text-assignee">
+                    <User className="h-4 w-4" />
+                    {incident.assignedToName}
+                  </div>
+                ) : (
+                  <span className="text-muted-foreground italic">Unassigned</span>
+                )}
+              </div>
+
               {incident.attachmentUrl && (
                 <div>
                   <span className="text-muted-foreground block text-xs mb-1">Attachment</span>

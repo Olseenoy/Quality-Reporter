@@ -65,6 +65,13 @@ function Router() {
           </Shell>
         </AuthGuard>
       </Route>
+      <Route path="/assigned-to-me">
+        <AuthGuard>
+          <Shell>
+            <IncidentsList assignedToMe />
+          </Shell>
+        </AuthGuard>
+      </Route>
       <Route path="/incidents/new">
         <AuthGuard>
           <Shell>
