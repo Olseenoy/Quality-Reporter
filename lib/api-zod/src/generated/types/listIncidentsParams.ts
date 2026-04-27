@@ -18,4 +18,5 @@ export type ListIncidentsParams = {
   status?: IncidentStatus;
   startDate?: Date;
   endDate?: Date;
+  reportedById?: number;
 };

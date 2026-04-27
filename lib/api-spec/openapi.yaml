@@ -157,6 +157,10 @@ paths:
           schema:
             type: string
             format: date-time
+        - in: query
+          name: reportedById
+          schema:
+            type: integer
       responses:
         "200":
           description: OK

@@ -120,6 +120,7 @@ export const ListIncidentsQueryParams = zod.object({
   status: zod.enum(["Open", "In Progress", "Closed"]).optional(),
   startDate: zod.date().optional(),
   endDate: zod.date().optional(),
+  reportedById: zod.coerce.number().optional(),
 });
 
 export const ListIncidentsResponseItem = zod.object({

@@ -27,7 +27,9 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 
 ## Quality Incident Reporting System (`artifacts/incidents`)
 
-Full-stack incident logging app. Auth uses bcryptjs + express-session backed by `connect-pg-simple` (table `user_sessions`, cookie `qirs.sid`). Roles: admin, supervisor, operator. Routes: `/api/auth/*`, `/api/lookups`, `/api/incidents`, `/api/dashboard/summary`. Frontend pages: Login, Register, Dashboard (charts via Recharts), Incidents list (filters + search), New Incident form, Incident detail (status / root cause editable by admin/supervisor).
+Full-stack incident logging app. Auth uses bcryptjs + express-session backed by `connect-pg-simple` (table `user_sessions`, cookie `qirs.sid`). Roles: admin, supervisor, operator. Routes: `/api/auth/*`, `/api/lookups`, `/api/incidents` (supports filters: search, department, category, severity, status, startDate, endDate, reportedById), `/api/dashboard/summary`. Frontend pages: Login, Register, Dashboard (charts via Recharts), Incidents list (filters + search + date range + CSV export), My Incidents (`/my-incidents`, reuses `IncidentsList` with `mineOnly` prop that injects `reportedById = currentUser.id`), New Incident form, Incident detail (status / root cause editable by admin/supervisor).
+
+UI is fully responsive: `Shell` has a hamburger sheet drawer for mobile (`md:hidden`) and a fixed sidebar (`md:flex`); dashboard and form grids collapse to single column on small screens; tables scroll horizontally inside `overflow-x-auto`.
 
 Demo logins (password `password123`):
 - `admin@factory.local`

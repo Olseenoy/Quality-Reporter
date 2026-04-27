@@ -66,10 +66,10 @@ export function IncidentDetail() {
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto">
-      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-card p-6 rounded-lg border shadow-sm">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold tracking-tight" data-testid="text-incident-code">{incident.incidentCode}</h1>
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 bg-card p-4 sm:p-6 rounded-lg border shadow-sm">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-all" data-testid="text-incident-code">{incident.incidentCode}</h1>
             <Badge variant={incident.severity === 'Critical' ? 'destructive' : incident.severity === 'High' ? 'default' : 'secondary'} className="text-sm px-2 py-0.5">
               {incident.severity}
             </Badge>
@@ -99,8 +99,8 @@ export function IncidentDetail() {
         )}
       </div>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader className="pb-3">
               <CardTitle className="text-lg flex items-center gap-2">

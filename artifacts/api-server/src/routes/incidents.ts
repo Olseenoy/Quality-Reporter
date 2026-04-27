@@ -36,7 +36,7 @@ function toIncidentDto(row: IncidentRow, reporter: UserRow | null) {
   };
 }
 
-function coerceListQueryDates(query: unknown): unknown {
+function coerceListQuery(query: unknown): unknown {
   if (!query || typeof query !== "object") return query;
   const out: Record<string, unknown> = { ...(query as Record<string, unknown>) };
   for (const key of ["startDate", "endDate"]) {
@@ -45,6 +45,10 @@ function coerceListQueryDates(query: unknown): unknown {
       const d = new Date(v);
       if (!Number.isNaN(d.getTime())) out[key] = d;
     }
+  }
+  if (typeof out.reportedById === "string" && out.reportedById.length > 0) {
+    const n = Number(out.reportedById);
+    if (!Number.isNaN(n)) out.reportedById = n;
   }
   return out;
 }
@@ -64,7 +68,7 @@ router.get("/incidents", async (req, res): Promise<void> => {
     return;
   }
 
-  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQueryDates(req.query));
+  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQuery(req.query));
   if (!parsedQuery.success) {
     res.status(400).json({ message: parsedQuery.error.message });
     return;
@@ -89,6 +93,8 @@ router.get("/incidents", async (req, res): Promise<void> => {
   if (q.status) conditions.push(eq(incidentsTable.status, q.status));
   if (q.startDate) conditions.push(gte(incidentsTable.occurredAt, q.startDate));
   if (q.endDate) conditions.push(lte(incidentsTable.occurredAt, q.endDate));
+  if (q.reportedById !== undefined)
+    conditions.push(eq(incidentsTable.reportedById, q.reportedById));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
@@ -117,7 +123,7 @@ router.get("/incidents/export.csv", async (req, res): Promise<void> => {
     return;
   }
 
-  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQueryDates(req.query));
+  const parsedQuery = ListIncidentsQueryParams.safeParse(coerceListQuery(req.query));
   if (!parsedQuery.success) {
     res.status(400).json({ message: parsedQuery.error.message });
     return;
@@ -142,6 +148,8 @@ router.get("/incidents/export.csv", async (req, res): Promise<void> => {
   if (q.status) conditions.push(eq(incidentsTable.status, q.status));
   if (q.startDate) conditions.push(gte(incidentsTable.occurredAt, q.startDate));
   if (q.endDate) conditions.push(lte(incidentsTable.occurredAt, q.endDate));
+  if (q.reportedById !== undefined)
+    conditions.push(eq(incidentsTable.reportedById, q.reportedById));
 
   const where = conditions.length > 0 ? and(...conditions) : undefined;
 
