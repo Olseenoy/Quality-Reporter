@@ -14,6 +14,7 @@ import {
   Menu,
   User as UserIcon,
   Inbox,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
     roles: null,
   },
   { href: "/incidents/new", label: "New Incident", icon: PlusCircle, roles: null },
+  { href: "/manage-users", label: "Manage Users", icon: Users, roles: ["admin"] },
 ] as const;
 
 function isActiveRoute(currentPath: string, href: string): boolean {
@@ -49,13 +51,15 @@ function isActiveRoute(currentPath: string, href: string): boolean {
 function NavLinks({
   location,
   onNavigate,
+  userRole,
 }: {
   location: string;
   onNavigate?: () => void;
+  userRole?: string;
 }) {
   return (
     <nav className="flex flex-col gap-1">
-      {NAV_ITEMS.map((item) => {
+      {NAV_ITEMS.filter(item => !item.roles || item.roles.includes(userRole ?? "")).map((item) => {
         const isActive = isActiveRoute(location, item.href);
         return (
           <Link
@@ -115,7 +119,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <span className="text-lg font-bold">Quality System</span>
         </div>
         <div className="flex-1 overflow-y-auto p-4">
-          <NavLinks location={location} />
+          <NavLinks location={location} userRole={user.role} />
         </div>
       </aside>
 
@@ -140,7 +144,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 <div className="p-4">
                   <NavLinks
                     location={location}
-                    onNavigate={() => setMobileOpen(false)}
+                    onNavigate={() => setMobileOpen(false)} userRole={user.role}
                   />
                 </div>
               </SheetContent>
