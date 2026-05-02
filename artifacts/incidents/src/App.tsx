@@ -11,6 +11,7 @@ import { Dashboard } from "@/pages/Dashboard";
 import { IncidentsList } from "@/pages/IncidentsList";
 import { IncidentDetail } from "@/pages/IncidentDetail";
 import { IncidentCreate } from "@/pages/IncidentCreate";
+import { ManageUsers } from "@/pages/ManageUsers";
 import { useGetCurrentUser } from "@workspace/api-client-react";
 
 const queryClient = new QueryClient();
@@ -83,6 +84,13 @@ function Router() {
         <AuthGuard>
           <Shell>
             <IncidentDetail />
+          </Shell>
+        </AuthGuard>
+      </Route>
+      <Route path="/manage-users">
+        <AuthGuard>
+          <Shell>
+            <ManageUsers />
           </Shell>
         </AuthGuard>
       </Route>
