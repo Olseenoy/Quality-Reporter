@@ -73,7 +73,7 @@ app.use("/api", router);
 import path from "path";
 import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const frontendDist = "/opt/render/project/src/artifacts/incidents";
+const frontendDist = "/opt/render/project/src/artifacts/incidents/dist/public";
 app.use(express.static(frontendDist));
 app.get("*path", (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
