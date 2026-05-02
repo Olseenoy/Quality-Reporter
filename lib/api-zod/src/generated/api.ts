@@ -7,6 +7,64 @@
  */
 import * as zod from "zod";
 
+const DEPARTMENTS = [
+  "Engineering",
+  "HSE",
+  "Packaging",
+  "Production",
+  "Quality",
+  "Research & Development",
+  "Warehouse",
+  "Others",
+] as const;
+
+const CATEGORIES = [
+  "Bad Wrap",
+  "Contamination",
+  "Cube Crash",
+  "Equipment Failure",
+  "Failed Product/ Blend",
+  "Unhygienic Condition",
+  "Sachet Leakages",
+  "Packaging Defect",
+  "Process Deviation",
+  "Underweight",
+  "Waste",
+  "Others",
+] as const;
+
+const SEVERITIES = ["Low", "Medium", "High", "Critical"] as const;
+const STATUSES = ["Open", "In Progress", "Closed"] as const;
+const ROLES = ["admin", "supervisor", "operator"] as const;
+
+const departmentEnum = zod.enum(DEPARTMENTS);
+const categoryEnum = zod.enum(CATEGORIES);
+const severityEnum = zod.enum(SEVERITIES);
+const statusEnum = zod.enum(STATUSES);
+const roleEnum = zod.enum(ROLES);
+
+const incidentShape = {
+  id: zod.number(),
+  incidentCode: zod.string(),
+  occurredAt: zod.coerce.date(),
+  department: departmentEnum,
+  line: zod.string(),
+  productType: zod.string(),
+  category: categoryEnum,
+  severity: severityEnum,
+  description: zod.string(),
+  immediateAction: zod.string(),
+  status: statusEnum,
+  attachmentUrl: zod.string().nullish(),
+  rootCauseCategory: zod.string().nullish(),
+  reportedById: zod.number(),
+  reportedByName: zod.string(),
+  assignedToId: zod.number().nullish(),
+  assignedToName: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+};
+
 /**
  * @summary Health check
  */
@@ -18,14 +76,13 @@ export const HealthCheckResponse = zod.object({
  * @summary Register a new user
  */
 export const registerBodyEmailMin = 3;
-
 export const registerBodyPasswordMin = 8;
 
 export const RegisterBody = zod.object({
   email: zod.string().min(registerBodyEmailMin),
   password: zod.string().min(registerBodyPasswordMin),
   fullName: zod.string().min(1),
-  role: zod.enum(["admin", "supervisor", "operator"]).optional(),
+  role: roleEnum.optional(),
 });
 
 export const RegisterResponse = zod.object({
@@ -33,7 +90,7 @@ export const RegisterResponse = zod.object({
     id: zod.number(),
     email: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "supervisor", "operator"]),
+    role: roleEnum,
     createdAt: zod.coerce.date(),
   }),
 });
@@ -51,7 +108,7 @@ export const LoginResponse = zod.object({
     id: zod.number(),
     email: zod.string(),
     fullName: zod.string(),
-    role: zod.enum(["admin", "supervisor", "operator"]),
+    role: roleEnum,
     createdAt: zod.coerce.date(),
   }),
 });
@@ -70,7 +127,7 @@ export const GetCurrentUserResponse = zod.object({
   id: zod.number(),
   email: zod.string(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "supervisor", "operator"]),
+  role: roleEnum,
   createdAt: zod.coerce.date(),
 });
 
@@ -78,24 +135,13 @@ export const GetCurrentUserResponse = zod.object({
  * @summary Get all dropdown lookup values
  */
 export const GetLookupsResponse = zod.object({
-  departments: zod.array(
-    zod.enum(["Production", "Quality", "Engineering", "Warehouse", "HSE"]),
-  ),
-  categories: zod.array(
-    zod.enum([
-      "Contamination",
-      "Underweight",
-      "Equipment Failure",
-      "Process Deviation",
-      "Packaging Defect",
-      "Others",
-    ]),
-  ),
-  severities: zod.array(zod.enum(["Low", "Medium", "High", "Critical"])),
-  statuses: zod.array(zod.enum(["Open", "In Progress", "Closed"])),
+  departments: zod.array(departmentEnum),
+  categories: zod.array(categoryEnum),
+  severities: zod.array(severityEnum),
+  statuses: zod.array(statusEnum),
   lines: zod.array(zod.string()),
   productTypes: zod.array(zod.string()),
-  roles: zod.array(zod.enum(["admin", "supervisor", "operator"])),
+  roles: zod.array(roleEnum),
 });
 
 /**
@@ -104,7 +150,7 @@ export const GetLookupsResponse = zod.object({
 export const ListUsersResponseItem = zod.object({
   id: zod.number(),
   fullName: zod.string(),
-  role: zod.enum(["admin", "supervisor", "operator"]),
+  role: roleEnum,
 });
 export const ListUsersResponse = zod.array(ListUsersResponseItem);
 
@@ -113,126 +159,35 @@ export const ListUsersResponse = zod.array(ListUsersResponseItem);
  */
 export const ListIncidentsQueryParams = zod.object({
   search: zod.coerce.string().optional(),
-  department: zod
-    .enum(["Production", "Quality", "Engineering", "Warehouse", "HSE"])
-    .optional(),
-  category: zod
-    .enum([
-      "Contamination",
-      "Underweight",
-      "Equipment Failure",
-      "Process Deviation",
-      "Packaging Defect",
-      "Others",
-    ])
-    .optional(),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]).optional(),
-  status: zod.enum(["Open", "In Progress", "Closed"]).optional(),
+  department: departmentEnum.optional(),
+  category: categoryEnum.optional(),
+  severity: severityEnum.optional(),
+  status: statusEnum.optional(),
   startDate: zod.date().optional(),
   endDate: zod.date().optional(),
   reportedById: zod.coerce.number().optional(),
   assignedToId: zod.coerce.number().optional(),
 });
 
-export const ListIncidentsResponseItem = zod.object({
-  id: zod.number(),
-  incidentCode: zod.string(),
-  occurredAt: zod.coerce.date(),
-  department: zod.enum([
-    "Production",
-    "Quality",
-    "Engineering",
-    "Warehouse",
-    "HSE",
-  ]),
-  line: zod.string(),
-  productType: zod.string(),
-  category: zod.enum([
-    "Contamination",
-    "Underweight",
-    "Equipment Failure",
-    "Process Deviation",
-    "Packaging Defect",
-    "Others",
-  ]),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-  description: zod.string(),
-  immediateAction: zod.string(),
-  status: zod.enum(["Open", "In Progress", "Closed"]),
-  attachmentUrl: zod.string().nullish(),
-  rootCauseCategory: zod.string().nullish(),
-  reportedById: zod.number(),
-  reportedByName: zod.string(),
-  assignedToId: zod.number().nullish(),
-  assignedToName: zod.string().nullish(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
+export const ListIncidentsResponseItem = zod.object(incidentShape);
 export const ListIncidentsResponse = zod.array(ListIncidentsResponseItem);
 
 /**
  * @summary Create new incident
  */
-
 export const CreateIncidentBody = zod.object({
-  department: zod.enum([
-    "Production",
-    "Quality",
-    "Engineering",
-    "Warehouse",
-    "HSE",
-  ]),
+  department: departmentEnum,
   line: zod.string().min(1),
   productType: zod.string().min(1),
-  category: zod.enum([
-    "Contamination",
-    "Underweight",
-    "Equipment Failure",
-    "Process Deviation",
-    "Packaging Defect",
-    "Others",
-  ]),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]),
+  category: categoryEnum,
+  severity: severityEnum,
   description: zod.string().min(1),
   immediateAction: zod.string().min(1),
   attachmentUrl: zod.string().nullish(),
   rootCauseCategory: zod.string().nullish(),
 });
 
-export const CreateIncidentResponse = zod.object({
-  id: zod.number(),
-  incidentCode: zod.string(),
-  occurredAt: zod.coerce.date(),
-  department: zod.enum([
-    "Production",
-    "Quality",
-    "Engineering",
-    "Warehouse",
-    "HSE",
-  ]),
-  line: zod.string(),
-  productType: zod.string(),
-  category: zod.enum([
-    "Contamination",
-    "Underweight",
-    "Equipment Failure",
-    "Process Deviation",
-    "Packaging Defect",
-    "Others",
-  ]),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-  description: zod.string(),
-  immediateAction: zod.string(),
-  status: zod.enum(["Open", "In Progress", "Closed"]),
-  attachmentUrl: zod.string().nullish(),
-  rootCauseCategory: zod.string().nullish(),
-  reportedById: zod.number(),
-  reportedByName: zod.string(),
-  assignedToId: zod.number().nullish(),
-  assignedToName: zod.string().nullish(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
+export const CreateIncidentResponse = zod.object(incidentShape);
 
 /**
  * @summary Get incident by id
@@ -241,40 +196,7 @@ export const GetIncidentParams = zod.object({
   id: zod.coerce.number(),
 });
 
-export const GetIncidentResponse = zod.object({
-  id: zod.number(),
-  incidentCode: zod.string(),
-  occurredAt: zod.coerce.date(),
-  department: zod.enum([
-    "Production",
-    "Quality",
-    "Engineering",
-    "Warehouse",
-    "HSE",
-  ]),
-  line: zod.string(),
-  productType: zod.string(),
-  category: zod.enum([
-    "Contamination",
-    "Underweight",
-    "Equipment Failure",
-    "Process Deviation",
-    "Packaging Defect",
-    "Others",
-  ]),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-  description: zod.string(),
-  immediateAction: zod.string(),
-  status: zod.enum(["Open", "In Progress", "Closed"]),
-  attachmentUrl: zod.string().nullish(),
-  rootCauseCategory: zod.string().nullish(),
-  reportedById: zod.number(),
-  reportedByName: zod.string(),
-  assignedToId: zod.number().nullish(),
-  assignedToName: zod.string().nullish(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
+export const GetIncidentResponse = zod.object(incidentShape);
 
 /**
  * @summary Update incident (status, action, etc)
@@ -284,46 +206,13 @@ export const UpdateIncidentParams = zod.object({
 });
 
 export const UpdateIncidentBody = zod.object({
-  status: zod.enum(["Open", "In Progress", "Closed"]).optional(),
+  status: statusEnum.optional(),
   immediateAction: zod.string().optional(),
   rootCauseCategory: zod.string().nullish(),
   assignedToId: zod.number().nullish(),
 });
 
-export const UpdateIncidentResponse = zod.object({
-  id: zod.number(),
-  incidentCode: zod.string(),
-  occurredAt: zod.coerce.date(),
-  department: zod.enum([
-    "Production",
-    "Quality",
-    "Engineering",
-    "Warehouse",
-    "HSE",
-  ]),
-  line: zod.string(),
-  productType: zod.string(),
-  category: zod.enum([
-    "Contamination",
-    "Underweight",
-    "Equipment Failure",
-    "Process Deviation",
-    "Packaging Defect",
-    "Others",
-  ]),
-  severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-  description: zod.string(),
-  immediateAction: zod.string(),
-  status: zod.enum(["Open", "In Progress", "Closed"]),
-  attachmentUrl: zod.string().nullish(),
-  rootCauseCategory: zod.string().nullish(),
-  reportedById: zod.number(),
-  reportedByName: zod.string(),
-  assignedToId: zod.number().nullish(),
-  assignedToName: zod.string().nullish(),
-  createdAt: zod.coerce.date(),
-  updatedAt: zod.coerce.date(),
-});
+export const UpdateIncidentResponse = zod.object(incidentShape);
 
 /**
  * @summary Get dashboard summary metrics and breakdowns
@@ -333,89 +222,12 @@ export const GetDashboardSummaryResponse = zod.object({
   openIncidents: zod.number(),
   criticalIncidents: zod.number(),
   last30DaysIncidents: zod.number(),
-  byCategory: zod.array(
-    zod.object({
-      category: zod.enum([
-        "Contamination",
-        "Underweight",
-        "Equipment Failure",
-        "Process Deviation",
-        "Packaging Defect",
-        "Others",
-      ]),
-      count: zod.number(),
-    }),
-  ),
-  byDepartment: zod.array(
-    zod.object({
-      department: zod.enum([
-        "Production",
-        "Quality",
-        "Engineering",
-        "Warehouse",
-        "HSE",
-      ]),
-      count: zod.number(),
-    }),
-  ),
-  bySeverity: zod.array(
-    zod.object({
-      severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-      count: zod.number(),
-    }),
-  ),
-  byStatus: zod.array(
-    zod.object({
-      status: zod.enum(["Open", "In Progress", "Closed"]),
-      count: zod.number(),
-    }),
-  ),
-  trend: zod.array(
-    zod.object({
-      date: zod.string(),
-      count: zod.number(),
-    }),
-  ),
-  trendByDepartment: zod.array(
-    zod.object({
-      date: zod.string(),
-    }),
-  ),
+  byCategory: zod.array(zod.object({ category: categoryEnum, count: zod.number() })),
+  byDepartment: zod.array(zod.object({ department: departmentEnum, count: zod.number() })),
+  bySeverity: zod.array(zod.object({ severity: severityEnum, count: zod.number() })),
+  byStatus: zod.array(zod.object({ status: statusEnum, count: zod.number() })),
+  trend: zod.array(zod.object({ date: zod.string(), count: zod.number() })),
+  trendByDepartment: zod.array(zod.object({ date: zod.string() })),
   departments: zod.array(zod.string()),
-  recent: zod.array(
-    zod.object({
-      id: zod.number(),
-      incidentCode: zod.string(),
-      occurredAt: zod.coerce.date(),
-      department: zod.enum([
-        "Production",
-        "Quality",
-        "Engineering",
-        "Warehouse",
-        "HSE",
-      ]),
-      line: zod.string(),
-      productType: zod.string(),
-      category: zod.enum([
-        "Contamination",
-        "Underweight",
-        "Equipment Failure",
-        "Process Deviation",
-        "Packaging Defect",
-        "Others",
-      ]),
-      severity: zod.enum(["Low", "Medium", "High", "Critical"]),
-      description: zod.string(),
-      immediateAction: zod.string(),
-      status: zod.enum(["Open", "In Progress", "Closed"]),
-      attachmentUrl: zod.string().nullish(),
-      rootCauseCategory: zod.string().nullish(),
-      reportedById: zod.number(),
-      reportedByName: zod.string(),
-      assignedToId: zod.number().nullish(),
-      assignedToName: zod.string().nullish(),
-      createdAt: zod.coerce.date(),
-      updatedAt: zod.coerce.date(),
-    }),
-  ),
+  recent: zod.array(zod.object(incidentShape)),
 });
