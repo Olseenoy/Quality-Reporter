@@ -28,22 +28,31 @@ export const UserRole = {
 export type Department = (typeof Department)[keyof typeof Department];
 
 export const Department = {
+  Engineering: "Engineering",
+  HSE: "HSE",
+  Packaging: "Packaging",
   Production: "Production",
   Quality: "Quality",
-  Engineering: "Engineering",
+  Research_Development: "Research & Development",
   Warehouse: "Warehouse",
-  HSE: "HSE",
+  Others: "Others",
 } as const;
 
 export type IncidentCategory =
   (typeof IncidentCategory)[keyof typeof IncidentCategory];
 
 export const IncidentCategory = {
+  Bad_Wrap: "Bad Wrap",
   Contamination: "Contamination",
-  Underweight: "Underweight",
+  Cube_Crash: "Cube Crash",
   Equipment_Failure: "Equipment Failure",
-  Process_Deviation: "Process Deviation",
+  Failed_Product_Blend: "Failed Product/ Blend",
+  Unhygienic_Condition: "Unhygienic Condition",
+  Sachet_Leakages: "Sachet Leakages",
   Packaging_Defect: "Packaging Defect",
+  Process_Deviation: "Process Deviation",
+  Underweight: "Underweight",
+  Waste: "Waste",
   Others: "Others",
 } as const;
 
