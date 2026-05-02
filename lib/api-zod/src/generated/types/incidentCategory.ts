@@ -5,15 +5,18 @@
  * Quality Incident Reporting System API
  * OpenAPI spec version: 0.1.0
  */
-
-export type IncidentCategory =
-  (typeof IncidentCategory)[keyof typeof IncidentCategory];
-
+export type IncidentCategory = (typeof IncidentCategory)[keyof typeof IncidentCategory];
 export const IncidentCategory = {
+  Bad_Wrap: "Bad Wrap",
   Contamination: "Contamination",
-  Underweight: "Underweight",
+  Cube_Crash: "Cube Crash",
   Equipment_Failure: "Equipment Failure",
-  Process_Deviation: "Process Deviation",
+  Failed_Product_Blend: "Failed Product/ Blend",
+  Unhygienic_Condition: "Unhygienic Condition",
+  Sachet_Leakages: "Sachet Leakages",
   Packaging_Defect: "Packaging Defect",
+  Process_Deviation: "Process Deviation",
+  Underweight: "Underweight",
+  Waste: "Waste",
   Others: "Others",
 } as const;
