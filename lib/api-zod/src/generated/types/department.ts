@@ -5,13 +5,14 @@
  * Quality Incident Reporting System API
  * OpenAPI spec version: 0.1.0
  */
-
 export type Department = (typeof Department)[keyof typeof Department];
-
 export const Department = {
+  Engineering: "Engineering",
+  HSE: "HSE",
+  Packaging: "Packaging",
   Production: "Production",
   Quality: "Quality",
-  Engineering: "Engineering",
+  Research_Development: "Research & Development",
   Warehouse: "Warehouse",
-  HSE: "HSE",
+  Others: "Others",
 } as const;
