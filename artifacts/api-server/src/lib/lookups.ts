@@ -30,7 +30,7 @@ export const STATUSES = ["Open", "In Progress", "Closed"] as const;
 
 export const ROLES = ["admin", "supervisor", "operator"] as const;
 
-export const EQUIPMENTS = [
+export const LINES = [
   "Processing",
   "Packaging",
   "Axillary",
