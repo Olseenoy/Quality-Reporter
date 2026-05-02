@@ -13,3 +13,9 @@ export const usersTable = pgTable("users", {
 
 export type User = typeof usersTable.$inferSelect;
 export type InsertUser = typeof usersTable.$inferInsert;
+
+export const userSessionsTable = pgTable("user_sessions", {
+  sid: varchar("sid").primaryKey(),
+  sess: text("sess").notNull(),
+  expire: timestamp("expire", { precision: 6 }).notNull(),
+});
