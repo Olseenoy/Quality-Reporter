@@ -111,8 +111,8 @@ export function Register() {
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="operator">Operator</SelectItem>
-                        <SelectItem value="supervisor">Supervisor</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                  
+                        
                       </SelectContent>
                     </Select>
                     <FormMessage />
