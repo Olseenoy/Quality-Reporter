@@ -1,17 +1,26 @@
 export const DEPARTMENTS = [
+  "Engineering",
+  "HSE",
+  "Packaging",
   "Production",
   "Quality",
-  "Engineering",
+  "Research & Development",
   "Warehouse",
-  "HSE",
+  "Others",
 ] as const;
 
 export const CATEGORIES = [
+  "Bad Wrap",
   "Contamination",
-  "Underweight",
+  "Cube Crash",
   "Equipment Failure",
-  "Process Deviation",
+  "Failed Product/ Blend",
+  "Unhygienic Condition",
+  "Sachet Leakages",
   "Packaging Defect",
+  "Process Deviation",
+  "Underweight",
+  "Waste",
   "Others",
 ] as const;
 
@@ -21,11 +30,13 @@ export const STATUSES = ["Open", "In Progress", "Closed"] as const;
 
 export const ROLES = ["admin", "supervisor", "operator"] as const;
 
-export const LINES = [
-  "Line 1",
-  "Line 2",
-  "Line 3",
-  "Line 4",
+export const EQUIPMENTS = [
+  "Processing",
+  "Packaging",
+  "Axillary",
+  "Transporting",
+  "NPS",
+  "UNIPAC",
   "Packaging Hall A",
   "Packaging Hall B",
   "Receiving Bay",
