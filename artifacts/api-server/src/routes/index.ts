@@ -4,6 +4,7 @@ import authRouter from "./auth";
 import lookupsRouter from "./lookups";
 import incidentsRouter from "./incidents";
 import dashboardRouter from "./dashboard";
+import usersRouter from "./users";
 
 const router: IRouter = Router();
 
@@ -12,5 +13,6 @@ router.use(authRouter);
 router.use(lookupsRouter);
 router.use(incidentsRouter);
 router.use(dashboardRouter);
+router.use(usersRouter);
 
 export default router;
