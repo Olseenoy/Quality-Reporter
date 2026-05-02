@@ -301,15 +301,21 @@ components:
       enum: [admin, supervisor, operator]
     Department:
       type: string
-      enum: [Production, Quality, Engineering, Warehouse, HSE]
+      enum: [Engineering, HSE, Packaging, Production, Quality, "Research & Development", Warehouse, Others]
     IncidentCategory:
       type: string
       enum:
+        - Bad Wrap
         - Contamination
-        - Underweight
+        - Cube Crash
         - Equipment Failure
-        - Process Deviation
+        - "Failed Product/ Blend"
+        - Unhygienic Condition
+        - Sachet Leakages
         - Packaging Defect
+        - Process Deviation
+        - Underweight
+        - Waste
         - Others
     Severity:
       type: string
