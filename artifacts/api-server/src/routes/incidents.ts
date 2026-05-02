@@ -364,4 +364,20 @@ router.patch("/incidents/:id", async (req, res): Promise<void> => {
   res.json(toIncidentDto(row, reporter ?? null, assignee));
 });
 
+router.delete("/incidents", async (req, res): Promise<void> => {
+  if (!req.session?.userId) {
+    res.status(401).json({ message: "Authentication required" });
+    return;
+  }
+  const [me] = await db
+    .select({ role: usersTable.role })
+    .from(usersTable)
+    .where(eq(usersTable.id, req.session.userId));
+  if (!me || me.role !== "admin") {
+    res.status(403).json({ message: "Only admins can clear all incidents" });
+    return;
+  }
+  await db.delete(incidentsTable);
+  res.json({ message: "All incidents cleared successfully" });
+});
 export default router;
