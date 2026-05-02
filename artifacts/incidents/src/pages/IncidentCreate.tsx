@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { useGetLookups, useCreateIncident, Department, IncidentCategory, Severity, useGetCurrentUser } from "@workspace/api-client-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,8 +16,10 @@ const FISHBONE_CATEGORIES = ["People", "Process", "Equipment", "Materials", "Env
 
 const schema = z.object({
   department: z.nativeEnum(Department),
-  line: z.string().min(1, "Line is required"),
-  productType: z.string().min(1, "Product Type is required"),
+  lineCategory: z.string().min(1, "Line is required"),
+  lineDetail: z.string().optional(),
+  productCategory: z.string().min(1, "Product Type is required"),
+  productDetail: z.string().optional(),
   category: z.nativeEnum(IncidentCategory),
   severity: z.nativeEnum(Severity),
   description: z.string().min(5, "Description must be at least 5 characters"),
@@ -37,8 +39,10 @@ export function IncidentCreate() {
     resolver: zodResolver(schema),
     defaultValues: {
       department: Department.Production,
-      line: "",
-      productType: "",
+      lineCategory: "",
+      lineDetail: "",
+      productCategory: "",
+      productDetail: "",
       category: IncidentCategory.Others,
       severity: Severity.Low,
       description: "",
@@ -49,8 +53,11 @@ export function IncidentCreate() {
   });
 
   const onSubmit = (data: z.infer<typeof schema>) => {
+    const line = data.lineDetail ? `${data.lineCategory} - ${data.lineDetail}` : data.lineCategory;
+    const productType = data.productDetail ? `${data.productCategory} - ${data.productDetail}` : data.productCategory;
+
     createMutation.mutate(
-      { data: { ...data, attachmentUrl: data.attachmentUrl || null, rootCauseCategory: data.rootCauseCategory || null } },
+      { data: { ...data, line, productType, attachmentUrl: data.attachmentUrl || null, rootCauseCategory: data.rootCauseCategory || null } },
       {
         onSuccess: (incident) => {
           toast({ title: "Incident logged successfully", description: `Code: ${incident.incidentCode}` });
@@ -81,12 +88,13 @@ export function IncidentCreate() {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Location & Product</CardTitle>
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
               <FormField
                 control={form.control}
                 name="department"
@@ -108,47 +116,80 @@ export function IncidentCreate() {
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="line"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Line / Equipment ID</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-line">
-                          <SelectValue placeholder="Select line" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {lookups?.lines.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+              {/* LINE - dropdown + optional text */}
+              <div className="space-y-2">
+                <FormField
+                  control={form.control}
+                  name="lineCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Line / Equipment</FormLabel>
+                      <Select onValueChange={(val) => { field.onChange(val); form.setValue("lineDetail", ""); }} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-line">
+                            <SelectValue placeholder="Select line" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lookups?.lines.map(l => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch("lineCategory") && (
+                  <FormField
+                    control={form.control}
+                    name="lineDetail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Specific name, e.g. NPS 617 (optional)" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
+              </div>
 
-              <FormField
-                control={form.control}
-                name="productType"
-                render={({ field }) => (
-                  <FormItem className="md:col-span-2">
-                    <FormLabel>Product Type / SKU</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-product">
-                          <SelectValue placeholder="Select product" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {lookups?.productTypes.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
+              {/* PRODUCT TYPE - dropdown + optional text */}
+              <div className="space-y-2 md:col-span-2">
+                <FormField
+                  control={form.control}
+                  name="productCategory"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Product Type / SKU</FormLabel>
+                      <Select onValueChange={(val) => { field.onChange(val); form.setValue("productDetail", ""); }} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-product">
+                            <SelectValue placeholder="Select product" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lookups?.productTypes.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                {form.watch("productCategory") && (
+                  <FormField
+                    control={form.control}
+                    name="productDetail"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormControl>
+                          <Input placeholder="Specific variant, e.g. Hot Melt (optional)" {...field} />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 )}
-              />
+              </div>
+
             </CardContent>
           </Card>
 
@@ -210,10 +251,10 @@ export function IncidentCreate() {
                   <FormItem>
                     <FormLabel>Detailed Description</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="Describe what happened, what was observed, and any relevant details..." 
-                        className="min-h-[120px] resize-y" 
-                        {...field} 
+                      <Textarea
+                        placeholder="Describe what happened, what was observed, and any relevant details..."
+                        className="min-h-[120px] resize-y"
+                        {...field}
                         data-testid="input-description"
                       />
                     </FormControl>
@@ -229,10 +270,10 @@ export function IncidentCreate() {
                   <FormItem>
                     <FormLabel>Immediate Action Taken</FormLabel>
                     <FormControl>
-                      <Textarea 
-                        placeholder="What steps were taken immediately to contain the issue? (e.g. Line stopped, product quarantined)" 
-                        className="min-h-[80px] resize-y" 
-                        {...field} 
+                      <Textarea
+                        placeholder="What steps were taken immediately to contain the issue? (e.g. Line stopped, product quarantined)"
+                        className="min-h-[80px] resize-y"
+                        {...field}
                         data-testid="input-immediate-action"
                       />
                     </FormControl>
@@ -289,7 +330,6 @@ export function IncidentCreate() {
                   <User className="h-4 w-4" />
                   Reporting as: <span className="font-medium text-foreground">{user?.fullName}</span>
                 </div>
-                
                 <div className="flex gap-3">
                   <Button type="button" variant="outline" onClick={() => setLocation('/incidents')}>Cancel</Button>
                   <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit-incident" className="min-w-[120px]">
@@ -299,7 +339,7 @@ export function IncidentCreate() {
               </div>
             </CardContent>
           </Card>
-          
+
         </form>
       </Form>
     </div>
