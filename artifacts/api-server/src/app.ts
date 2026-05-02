@@ -75,7 +75,7 @@ import { fileURLToPath } from "url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const frontendDist = path.resolve(__dirname, "../../../../artifacts/incidents/dist");
 app.use(express.static(frontendDist));
-app.get("*", (_req, res) => {
+app.get("*path", (_req, res) => {
   res.sendFile(path.join(frontendDist, "index.html"));
 });
 
